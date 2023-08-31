@@ -55,3 +55,30 @@ exports.createProperty = async (req, res) => {
     });
   }
 };
+
+exports.updateProperty = async (req, res) => {
+  try {
+    const property = await Property.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+    res.status(201).json({ status: "success", data: { property } });
+  } catch (err) {
+    res.status(400).json({
+      status: "fail",
+      message: err,
+    });
+  }
+};
+
+exports.deleteProperty = async (req, res) => {
+  try {
+    await Property.findByIdAndDelete(req.params.id);
+    res.status(204).json({ status: "success", data: null });
+  } catch (err) {
+    res.status(400).json({
+      status: "fail",
+      message: err,
+    });
+  }
+};
