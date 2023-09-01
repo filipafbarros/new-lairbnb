@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const PropertySchema = new mongoose.Schema({
-  title: {
+  name: {
     type: String,
     required: [true, "A property needs a name"],
     unique: true,
@@ -12,7 +12,7 @@ const PropertySchema = new mongoose.Schema({
 });
 
 // const PropertySchema = new mongoose.Schema({
-//   title: {
+//   name: {
 //     type: String,
 //     required: [true, "A property needs a name"],
 //     unique: true,

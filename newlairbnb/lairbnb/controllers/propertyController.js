@@ -1,42 +1,24 @@
 const Property = require("../models/Property.model");
 const express = require("express");
+const APIFeatures = require("../utils/apiFeatures");
+
+exports.aliasTopProperties = async (req, res, next) => {
+  req.query.limit = "10";
+  req.query.sort = "-ratingsAverage,price";
+  req.query.fields = "name,price,ratingsAverage,description,location";
+  next();
+};
 
 // Get all properties
 exports.getAllProperties = async (req, res) => {
   try {
-    // Build Query
-    // 1) Filtering
-    const queryObj = { ...req.query };
-    const excludedFields = ["page", "sort", "limit", "fields"];
-    excludedFields.forEach((el) => delete queryObj[el]);
-
-    // 2) Advanced filtering
-    let queryString = JSON.stringify(queryObj);
-    queryString = queryString.replace(
-      /\b(gte|gt|lte|lt)\b/g,
-      (match) => `$${match}`
-    );
-    let query = await Property.find(JSON.parse(queryString));
-
-    // 3) Sorting
-    if (req.query.sort) {
-      const sortBy = req.quary.sort.split(",".join(" "));
-      query = query.sort(sortBy);
-    } else {
-      query = query.sort("-createdAt");
-    }
-
-    // 4) Limiting fields
-
-    if (req.query.fields) {
-      const fields = req.query.fields.split(",".join(" "));
-      query = query.select(fields);
-    } else {
-      query = query.select("-__v");
-    }
-
     // Execute Query
-    const properties = await query;
+    const features = new APIFeatures(Property.find(), req.query)
+      .filter()
+      .sort()
+      .limitFields()
+      .paginate();
+    const properties = await features.query;
 
     res.status(200).json({
       status: "success",
@@ -107,6 +89,35 @@ exports.deleteProperty = async (req, res) => {
   try {
     await Property.findByIdAndDelete(req.params.id);
     res.status(204).json({ status: "success", data: null });
+  } catch (err) {
+    res.status(400).json({
+      status: "fail",
+      message: err,
+    });
+  }
+};
+
+exports.getPropertyStats = async (req, res) => {
+  try {
+    const stats = await Property.aggregate([
+      {
+        $match: { ratingsAverage: { $gte: 4.5 } },
+      },
+      {
+        $group: {
+          _id: null,
+          numProperties: { $sum: 1 },
+          numRatings: { $sum: "$ratingsQuantity" },
+          avgRating: { $avg: "$ratingsAverage" },
+          avgPrice: { $avg: "$price" },
+          minPrice: { $min: "$price" },
+          maxPrice: { $max: "$price" },
+        },
+      },
+      { $sort: { avgPrice: 1 } },
+    ]);
+
+    res.status(200).json({ status: "success", data: { stats } });
   } catch (err) {
     res.status(400).json({
       status: "fail",
