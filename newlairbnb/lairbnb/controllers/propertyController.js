@@ -1,6 +1,8 @@
 const Property = require("../models/Property.model");
 const express = require("express");
 const APIFeatures = require("../utils/apiFeatures");
+const catchAsync = require("../utils/catchAsync");
+const AppError = require("../utils/appError");
 
 exports.aliasTopProperties = async (req, res, next) => {
   req.query.limit = "10";
@@ -10,118 +12,86 @@ exports.aliasTopProperties = async (req, res, next) => {
 };
 
 // Get all properties
-exports.getAllProperties = async (req, res) => {
-  try {
-    // Execute Query
-    const features = new APIFeatures(Property.find(), req.query)
-      .filter()
-      .sort()
-      .limitFields()
-      .paginate();
-    const properties = await features.query;
+exports.getAllProperties = catchAsync(async (req, res, next) => {
+  // Execute Query
+  const features = new APIFeatures(Property.find(), req.query)
+    .filter()
+    .sort()
+    .limitFields()
+    .paginate();
+  const properties = await features.query;
 
-    res.status(200).json({
-      status: "success",
-      results: properties.length,
-      data: {
-        properties,
-      },
-    });
-  } catch (err) {
-    res.status(404).json({
-      status: "fail",
-      message: err,
-    });
-  }
-};
+  res.status(200).json({
+    status: "success",
+    results: properties.length,
+    data: {
+      properties,
+    },
+  });
+});
 
 // Get property
-exports.getProperty = async (req, res) => {
-  try {
-    const property = await Property.findById(req.params.id);
+exports.getProperty = catchAsync(async (req, res, next) => {
+  const property = await Property.findById(req.params.id);
 
-    res.status(200).json({
-      status: "success",
-      data: {
-        property,
-      },
-    });
-  } catch (err) {
-    res.status(404).json({
-      status: "fail",
-      message: err,
-    });
+  if (!property) {
+    return next(new AppError("No property found with that ID", 404));
   }
-};
+
+  res.status(200).json({
+    status: "success",
+    data: {
+      property,
+    },
+  });
+});
 
 // Create property
-exports.createProperty = async (req, res) => {
-  try {
-    const newProperty = await Property.create(req.body);
+exports.createProperty = catchAsync(async (req, res, next) => {
+  const newProperty = await Property.create(req.body);
 
-    res
-      .status(201)
-      .json({ status: "success", data: { property: newProperty } });
-  } catch (err) {
-    res.status(400).json({
-      status: "fail",
-      message: err,
-    });
+  res.status(201).json({ status: "success", data: { property: newProperty } });
+});
+
+exports.updateProperty = catchAsync(async (req, res, next) => {
+  const property = await Property.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true,
+  });
+  if (!property) {
+    return next(new AppError("No property found with that ID", 404));
   }
-};
 
-exports.updateProperty = async (req, res) => {
-  try {
-    const property = await Property.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
-    res.status(201).json({ status: "success", data: { property } });
-  } catch (err) {
-    res.status(400).json({
-      status: "fail",
-      message: err,
-    });
+  res.status(201).json({ status: "success", data: { property } });
+});
+
+exports.deleteProperty = catchAsync(async (req, res, next) => {
+  const property = await Property.findByIdAndDelete(req.params.id);
+  if (!property) {
+    return next(new AppError("No property found with that ID", 404));
   }
-};
 
-exports.deleteProperty = async (req, res) => {
-  try {
-    await Property.findByIdAndDelete(req.params.id);
-    res.status(204).json({ status: "success", data: null });
-  } catch (err) {
-    res.status(400).json({
-      status: "fail",
-      message: err,
-    });
-  }
-};
+  res.status(204).json({ status: "success", data: null });
+});
 
-exports.getPropertyStats = async (req, res) => {
-  try {
-    const stats = await Property.aggregate([
-      {
-        $match: { ratingsAverage: { $gte: 4.5 } },
+exports.getPropertyStats = catchAsync(async (req, res, next) => {
+  const stats = await Property.aggregate([
+    {
+      $match: { ratingsAverage: { $gte: 4.5 } },
+    },
+    {
+      $group: {
+        _id: null,
+        numProperties: { $sum: 1 },
+        numRatings: { $sum: "$ratingsQuantity" },
+        avgRating: { $avg: "$ratingsAverage" },
+        avgPrice: { $avg: "$price" },
+        minPrice: { $min: "$price" },
+        maxPrice: { $max: "$price" },
       },
-      {
-        $group: {
-          _id: null,
-          numProperties: { $sum: 1 },
-          numRatings: { $sum: "$ratingsQuantity" },
-          avgRating: { $avg: "$ratingsAverage" },
-          avgPrice: { $avg: "$price" },
-          minPrice: { $min: "$price" },
-          maxPrice: { $max: "$price" },
-        },
-      },
-      { $sort: { avgPrice: 1 } },
-    ]);
+    },
+    { $sort: { avgPrice: 1 } },
+  ]);
 
-    res.status(200).json({ status: "success", data: { stats } });
-  } catch (err) {
-    res.status(400).json({
-      status: "fail",
-      message: err,
-    });
-  }
-};
+  res.status(200).json({ status: "success", data: { stats } });
+});
