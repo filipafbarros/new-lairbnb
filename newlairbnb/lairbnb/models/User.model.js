@@ -1,32 +1,70 @@
-const { Schema, model } = require("mongoose");
+const mongoose = require("mongoose");
+const validator = require("validator");
+const bcrypt = require("bcryptjs");
 
-// TODO: Please make sure you edit the User model to whatever makes sense in this case
-const userSchema = new Schema(
-  {
-    username: {
-      type: String,
-      trim: true,
-      required: false,
-      unique: true
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
-      trim: true
-    },
-    password: {
-      type: String,
-      required: true
-    }
+const UserSchema = new mongoose.Schema({
+  firstName: {
+    type: String,
+    required: [true, "Please tell us your first name"],
+    min: 2,
+    max: 50,
   },
-  {
-    // this second object adds extra properties: `createdAt` and `updatedAt`    
-    timestamps: true
-  }
-);
+  lastName: {
+    type: String,
+    required: [true, "Please tell us your last name!"],
+    min: 2,
+    max: 50,
+  },
+  email: {
+    type: String,
+    required: [true, "Please provide us your email"],
+    unique: true,
+    lowercase: true,
+    validate: [validator.isEmail, "Please provide a valid email"],
+  },
+  role: {
+    type: String,
+    enum: ["user", "host"],
+    default: "user",
+  },
+  password: {
+    type: String,
+    required: [true, "Please provide password"],
+    minlength: 8,
+    select: false,
+  },
+  passwordConfirm: {
+    type: String,
+    required: [true, "Please confirm your password"],
+    validate: {
+      validator: function (el) {
+        return el === this.password;
+      },
+      message: "Passwords are not the same!",
+    },
+  },
+  passwordChangedAt: Date,
+  passwordResetToken: String,
+  passwordResetExpires: Date,
+  dateJoined: { type: Date, default: Date.now },
+  active: {
+    type: Boolean,
+    default: true,
+    select: false,
+  },
+});
 
-const User = model("User", userSchema);
+UserSchema.pre("save", async function (next) {
+  // only run this function if password has been modified
+  if (!this.isModified("password")) return next();
+
+  this.password = await bcrypt.hash(this.password, 12);
+
+  // Deletes password confirm field
+  this.passwordConfirm = undefined;
+  next();
+});
+
+const User = mongoose.model("User", UserSchema);
 
 module.exports = User;
