@@ -4,6 +4,7 @@ const viewRouter = require("./routes/view.routes");
 const propertyRouter = require("./routes/property.routes");
 const AppError = require("./utils/appError");
 const globalErrorHandler = require("./controllers/errorController");
+const userRouter = require("./routes/user.routes");
 
 // https://www.npmjs.com/package/dotenv
 require("dotenv").config();
@@ -33,7 +34,7 @@ app.locals.appTitle = `${capitalize(projectName)} created with IronLauncher`;
 // ROUTES
 app.use("/", viewRouter);
 app.use("/api/v1/properties", propertyRouter);
-// app.use("/api/v1/users", userRouter);
+app.use("/api/v1/users", userRouter);
 // app.use("/api/v1/reviews", reviewRouter);
 // app.use("/api/v1/bookings", bookingRouter);
 
