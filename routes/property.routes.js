@@ -3,6 +3,7 @@ const express = require("express");
 const propertyController = require("../controllers/propertyController");
 const router = express.Router();
 const Property = require("../models/Property.model");
+const authController = require("./../controllers/authController");
 
 router
   .route("/top-10-cheap")
@@ -15,7 +16,7 @@ router.route("/property-stats").get(propertyController.getPropertyStats);
 
 router
   .route("/")
-  .get(propertyController.getAllProperties)
+  .get(authController.protect, propertyController.getAllProperties)
   .post(propertyController.createProperty);
 
 router

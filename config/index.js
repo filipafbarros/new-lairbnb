@@ -40,6 +40,11 @@ module.exports = (app) => {
   // Handles access to the public folder
   app.use(express.static(path.join(__dirname, "..", "public")));
 
+  app.use((req, res, next) => {
+    req.requestTime = new Date().toISOString();
+    next();
+  });
+
   // Handles access to the favicon
   app.use(
     favicon(path.join(__dirname, "..", "public", "images", "favicon.ico"))
