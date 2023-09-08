@@ -2,18 +2,6 @@ const mongoose = require("mongoose");
 const slugify = require("slugify");
 const validator = require("validator");
 
-// const PropertySchema = new mongoose.Schema({
-//   name: {
-//     type: String,
-//     required: [true, "A property needs a name"],
-//     unique: true,
-//     trim: true,
-//     maxlength: [60, "A property must have less or equal than 60 characters"],
-//     minlength: [10, "A property must have more of equal than 10 characters"],
-//     validate: [validator.isAlpha, "Property name must only contain characters"],
-//   },
-// });
-
 const PropertySchema = new mongoose.Schema({
   name: {
     type: String,

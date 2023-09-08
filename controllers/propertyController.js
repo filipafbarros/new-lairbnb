@@ -13,14 +13,13 @@ exports.aliasTopProperties = async (req, res, next) => {
 
 // Get all properties
 exports.getAllProperties = catchAsync(async (req, res, next) => {
-  let filter = {};
-  if (req.params.propertyId) filter = { property: req.params.propertyId };
   // Execute Query
   const features = new APIFeatures(Property.find(), req.query)
     .filter()
     .sort()
     .limitFields()
     .paginate();
+
   const properties = await features.query;
 
   res.status(200).json({
