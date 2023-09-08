@@ -22,7 +22,15 @@ router
 router
   .route("/:id")
   .get(propertyController.getProperty)
-  .patch(propertyController.updateProperty)
-  .delete(propertyController.deleteProperty);
+  .patch(
+    authController.protect,
+    authController.restrictTo("host"),
+    propertyController.updateProperty
+  )
+  .delete(
+    authController.protect,
+    authController.restrictTo("host"),
+    propertyController.deleteProperty
+  );
 
 module.exports = router;
