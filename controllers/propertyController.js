@@ -3,6 +3,7 @@ const express = require("express");
 const APIFeatures = require("../utils/apiFeatures");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
+const factory = require("./handlerFactory");
 
 exports.aliasTopProperties = async (req, res, next) => {
   req.query.limit = "10";
@@ -66,14 +67,7 @@ exports.updateProperty = catchAsync(async (req, res, next) => {
   res.status(201).json({ status: "success", data: { property } });
 });
 
-exports.deleteProperty = catchAsync(async (req, res, next) => {
-  const property = await Property.findByIdAndDelete(req.params.id);
-  if (!property) {
-    return next(new AppError("No property found with that ID", 404));
-  }
-
-  res.status(204).json({ status: "success", data: null });
-});
+exports.deleteProperty = factory.deleteOne(Property);
 
 exports.getPropertyStats = catchAsync(async (req, res, next) => {
   const stats = await Property.aggregate([

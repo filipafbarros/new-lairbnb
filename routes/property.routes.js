@@ -1,9 +1,11 @@
 const express = require("express");
-
-const propertyController = require("../controllers/propertyController");
 const router = express.Router();
-const Property = require("../models/Property.model");
+
+const reviewRouter = require("./review.routes");
+const propertyController = require("../controllers/propertyController");
 const authController = require("./../controllers/authController");
+
+router.use("/:propertyId/reviews", reviewRouter);
 
 router
   .route("/top-10-cheap")
@@ -32,5 +34,13 @@ router
     authController.restrictTo("host"),
     propertyController.deleteProperty
   );
+
+// router
+//   .route("/:propertyId/reviews")
+//   .post(
+//     authController.protect,
+//     authController.restrictTo("user"),
+//     reviewController.createReview
+//   );
 
 module.exports = router;
