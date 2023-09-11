@@ -33,7 +33,7 @@ exports.getAllProperties = catchAsync(async (req, res, next) => {
 
 // Get property
 exports.getProperty = catchAsync(async (req, res, next) => {
-  const property = await Property.findById(req.params.id);
+  const property = await Property.findById(req.params.id).populate("reviews");
 
   if (!property) {
     return next(new AppError("No property found with that ID", 404));

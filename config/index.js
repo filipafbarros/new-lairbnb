@@ -21,6 +21,11 @@ const path = require("path");
 const cors = require("cors");
 const multer = require("multer");
 const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
+const mongoSanitize = require("express-mongo-sanitize");
+const xss = require("xss-clean");
+const hpp = require("hpp");
+
 //
 
 // Middleware configuration
@@ -29,7 +34,32 @@ module.exports = (app) => {
   app.use(logger("dev"));
 
   // To have access to `body` property in the request
+
+  const limiter = rateLimit({
+    max: 100,
+    windowMs: 60 * 60 * 1000,
+    message: "too many requests from this IP, please try again in 1h",
+  });
+
+  app.use("/api", limiter);
+
+  app.use(helmet());
+
   app.use(express.json());
+
+  // data sanitization
+  app.use(mongoSanitize());
+
+  // data sanitization against xss
+  app.use(xss());
+
+  //prevent paramenter pollution
+  app.use(
+    hpp({
+      whitelist: ["ratingsQuantity", "ratingsAverage", "maxGuests", "price"],
+    })
+  );
+
   app.use(express.urlencoded({ extended: false }));
   app.use(cookieParser());
 

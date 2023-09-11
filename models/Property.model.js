@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const slugify = require("slugify");
 const validator = require("validator");
+const Review = require("./Review.model");
 
 const PropertySchema = new mongoose.Schema({
   name: {
@@ -43,6 +44,13 @@ const PropertySchema = new mongoose.Schema({
   owner: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   images: [String],
   createdAt: { type: Date, default: Date.now(), select: false },
+});
+
+// Virtual populate
+PropertySchema.virtual("reviews", {
+  ref: "Review",
+  foreignField: "property",
+  localField: "_id",
 });
 
 PropertySchema.pre("save", function (next) {
