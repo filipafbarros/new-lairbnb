@@ -9,15 +9,16 @@ router.use(authController.protect);
 router
   .route("/")
   .get(reviewController.getAllReviews)
-  .post(authController.restrictTo("user"), reviewController.createReview);
+  .post(
+    authController.restrictTo("user"),
+    reviewController.setPropertyUserIds,
+    reviewController.createReview
+  );
 
 router
   .route("/:id")
-  //   .get(reviewController.getReview)
-  //   .patch(
-  //     authController.restrictTo('user', 'admin'),
-  //     reviewController.updateReview
-  //   )
-  .delete(reviewController.deleteReview);
+  .get(reviewController.getReview)
+  .patch(authController.restrictTo("user"), reviewController.updateReview)
+  .delete(authController.restrictTo("user"), reviewController.deleteReview);
 
 module.exports = router;

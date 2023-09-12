@@ -18,8 +18,12 @@ router.route("/property-stats").get(propertyController.getPropertyStats);
 
 router
   .route("/")
-  .get(authController.protect, propertyController.getAllProperties)
-  .post(propertyController.createProperty);
+  .get(propertyController.getAllProperties)
+  .post(
+    authController.protect,
+    authController.restrictTo("host"),
+    propertyController.createProperty
+  );
 
 router
   .route("/:id")
