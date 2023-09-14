@@ -65,8 +65,8 @@ module.exports = (app) => {
 
   // Normalizes the path to the views folder
   app.set("views", path.join(__dirname, "..", "views"));
-  // Sets the view engine to handlebars
-  app.set("view engine", "hbs");
+  // Sets the view engine to pug
+  app.set("view engine", "pug");
   // Handles access to the public folder
   app.use(express.static(path.join(__dirname, "..", "public")));
 
@@ -76,7 +76,5 @@ module.exports = (app) => {
   });
 
   // Handles access to the favicon
-  app.use(
-    favicon(path.join(__dirname, "..", "public", "images", "favicon.ico"))
-  );
+  app.use(favicon(path.join(__dirname, "..", "public", "img", "favicon.png")));
 };

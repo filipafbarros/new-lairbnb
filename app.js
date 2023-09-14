@@ -33,7 +33,10 @@ const projectName = "lairbnb";
 app.locals.appTitle = `${capitalize(projectName)} created with IronLauncher`;
 
 // ROUTES
-app.use("/", viewRouter);
+app.get("/", (req, res) => {
+  res.status(200).render("base");
+});
+
 app.use("/api/v1/properties", propertyRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/reviews", reviewRouter);
