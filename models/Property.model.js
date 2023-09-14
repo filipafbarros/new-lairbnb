@@ -33,8 +33,8 @@ const PropertySchema = new mongoose.Schema({
     required: true,
     trim: true,
     maxlength: [
-      300,
-      "A description must have less or equal than 300 characters",
+      500,
+      "A description must have less or equal than 500 characters",
     ],
     minlength: [30, "A description must have more of equal than 30 characters"],
   },

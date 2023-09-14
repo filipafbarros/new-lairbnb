@@ -1,0 +1,42 @@
+extends base
+
+block content
+  main.main
+    .card-container
+    
+      each property in properties
+        .card
+          .card__header
+            .card__picture
+              .card__picture-overlay &nbsp;
+              img.card__picture-img(`${property.images[0]}`, alt=`${property.name}`)
+            h3.heading-tertirary
+              span= property.name
+
+          .card__details
+            h4.card__sub-heading= `About the lair`
+            p.card__text= property.description
+            .card__data
+              svg.card__icon
+                use(xlink:href='/img/icons.svg#icon-map-pin')
+              span= property.location
+            .card__data
+              svg.card__icon
+                use(xlink:href='/img/icons.svg#icon-home')
+              span= property.amenities
+              
+            .card__data
+              svg.card__icon
+                use(xlink:href='/img/icons.svg#icon-user')
+              span= `${property.maxGuests} guests`
+
+          .card__footer
+            p
+              span.card__footer-value= `$${property.price}`
+              | 
+              span.card__footer-text per night
+            p.card__ratings
+              span.card__footer-value= property.ratingsAverage
+              | 
+              span.card__footer-text= `rating (${property.ratingsQuantity})`
+            a.btn.btn--green.btn--small(href=`/property/${property.slug}`) Details
